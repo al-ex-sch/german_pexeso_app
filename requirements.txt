@@ -19,9 +19,6 @@ numpy
 openpyxl
 pandas
 Pygments
-PyQt5
-PyQt5-Qt5
-PyQt5-sip
 python-dateutil
 python-slugify
 pytz
