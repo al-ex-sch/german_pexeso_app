@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pexeso with German Words</title>
+    <style>
+        .grid {
+            display: grid;
+            grid-template-columns: repeat({{ size }}, 1fr);
+            gap: 10px;
+        }
+        .card {
+            border: 1px solid black;
+            padding: 10px;
+            text-align: center;
+            background-color: lightgrey;
+            position: relative;
+            cursor: pointer;
+        }
+        .card-number {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+        }
+        .card-content {
+            display: none;
+        }
+    </style>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        let cards = document.querySelectorAll('.card');
+        let firstCard = null;
+        let secondCard = null;
+        let isWaiting = false;
+
+        cards.forEach(card => {
+            card.addEventListener('click', () => {
+                if (isWaiting || card.querySelector('.card-content').style.display === 'block' || card.classList.contains('guessed')) return;
+
+                card.querySelector('.card-content').style.display = 'block';
+                card.querySelector('.card-number').style.display = 'none';
+
+                if (!firstCard) {
+                    firstCard = card;
+                } else if (!secondCard) {
+                    secondCard = card;
+                    checkMatch();
+                }
+            });
+        });
+
+        function checkMatch() {
+        if (firstCard.dataset.pair === secondCard.dataset.pair) {
+            // Correct match, make the cards white and not clickable
+            setTimeout(() => {
+                firstCard.style.backgroundColor = 'white';
+                secondCard.style.backgroundColor = 'white';
+                firstCard.classList.add('guessed');
+                secondCard.classList.add('guessed');
+                firstCard.style.cursor = 'default';
+                secondCard.style.cursor = 'default';
+                firstCard.querySelector('.card-number').style.display = 'none'; // Hide the card number
+                secondCard.querySelector('.card-number').style.display = 'none'; // Hide the card number
+                resetSelection();
+            }, 1000);
+        } else {
+            // Incorrect match, flip the cards back
+            isWaiting = true;
+            setTimeout(() => {
+                firstCard.querySelector('.card-content').style.display = 'none';
+                secondCard.querySelector('.card-content').style.display = 'none';
+                firstCard.querySelector('.card-number').style.display = 'block';
+                secondCard.querySelector('.card-number').style.display = 'block';
+                resetSelection();
+                isWaiting = false;
+            }, 1000);
+        }
+    }
+
+        function resetSelection() {
+            firstCard = null;
+            secondCard = null;
+        }
+    });
+</script>
+
+</head>
+<body>
+    <h1>Pexeso with German Words - {{ size }}x{{ size }}</h1>
+    <div class="grid">
+        {% for index, (word, lang, pair) in data|enumerate %}
+            <div class="card" data-lang="{{ lang }}" data-pair="{{ pair }}">
+                <div class="card-number">{{ index + 1 }}</div>
+                <div class="card-content">{{ word }}</div>
+            </div>
+        {% endfor %}
+    </div>
+    <a href="/">Back to home</a>
+</body>
+</html>
