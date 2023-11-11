@@ -58,21 +58,32 @@
 
         function speak(text, lang) {
             const utterance = new SpeechSynthesisUtterance(text);
-            const voices = speechSynthesis.getVoices();
             const langCode = lang === 'en' ? 'en-US' : 'de-DE';
 
-            // Find the voice that matches the desired language
-            const matchingVoice = voices.find(voice => voice.lang === langCode);
+            function setVoiceAndSpeak() {
+                const voices = speechSynthesis.getVoices();
+                const defaultVoice = voices.find(voice => voice.lang === langCode && voice.default);
+                const matchingVoice = defaultVoice || voices.find(voice => voice.lang === langCode);
 
-            if (matchingVoice) {
-                utterance.voice = matchingVoice;
-            } else {
-                // Fallback to setting the language if a matching voice is not found
-                utterance.lang = langCode;
+                if (matchingVoice) {
+                    utterance.voice = matchingVoice;
+                } else {
+                    // Fallback to setting the language if a matching voice is not found
+                    utterance.lang = langCode;
+                }
+
+                speechSynthesis.speak(utterance);
             }
 
-            speechSynthesis.speak(utterance);
+            if (speechSynthesis.onvoiceschanged !== undefined) {
+                // Wait for the voices to be loaded before setting the voice and speaking
+                speechSynthesis.onvoiceschanged = setVoiceAndSpeak;
+            } else {
+                // If onvoiceschanged is not supported, attempt to set the voice and speak immediately
+                setVoiceAndSpeak();
+            }
         }
+
 
 
         cards.forEach(card => {
