@@ -58,9 +58,22 @@
 
         function speak(text, lang) {
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = lang === 'en' ? 'en-US' : 'de-DE';
+            const voices = speechSynthesis.getVoices();
+            const langCode = lang === 'en' ? 'en-US' : 'de-DE';
+
+            // Find the voice that matches the desired language
+            const matchingVoice = voices.find(voice => voice.lang === langCode);
+
+            if (matchingVoice) {
+                utterance.voice = matchingVoice;
+            } else {
+                // Fallback to setting the language if a matching voice is not found
+                utterance.lang = langCode;
+            }
+
             speechSynthesis.speak(utterance);
         }
+
 
         cards.forEach(card => {
             card.addEventListener('click', () => {
