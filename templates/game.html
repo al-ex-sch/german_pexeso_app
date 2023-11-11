@@ -4,26 +4,49 @@
     <meta charset="UTF-8">
     <title>Pexeso with German Words</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito&display=swap');
+
+        body, h1 {
+            font-family: 'Nunito', Calibri, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
         .grid {
             display: grid;
             grid-template-columns: repeat({{ size }}, 1fr);
             gap: 10px;
+            width: 90%;
+            margin: 0 auto;
+            padding-top: 30px;
         }
         .card {
             border: 1px solid black;
             padding: 10px;
             text-align: center;
-            background-color: lightgrey;
+            background-color: #61B5EC;
             position: relative;
             cursor: pointer;
+            font-family: 'Nunito', Calibri, sans-serif;
+            overflow: hidden;
+        }
+        .card::before {
+            content: "";
+            display: block;
+            padding-top: 35%; /* Adjust this value to change the aspect ratio of the cards */
         }
         .card-number {
-            position: absolute;
+            position: absolute; /* Add this line */
             top: 5px;
             right: 5px;
         }
         .card-content {
             display: none;
+            position: absolute; /* Add this line */
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
         }
     </style>
     <script>
@@ -33,12 +56,21 @@
         let secondCard = null;
         let isWaiting = false;
 
+        function speak(text, lang) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = lang === 'en' ? 'en-US' : 'de-DE';
+            speechSynthesis.speak(utterance);
+        }
+
         cards.forEach(card => {
             card.addEventListener('click', () => {
                 if (isWaiting || card.querySelector('.card-content').style.display === 'block' || card.classList.contains('guessed')) return;
 
                 card.querySelector('.card-content').style.display = 'block';
                 card.querySelector('.card-number').style.display = 'none';
+
+                // Speak the word when the card is clicked
+                speak(card.querySelector('.card-content').innerText, card.dataset.lang);
 
                 if (!firstCard) {
                     firstCard = card;
@@ -50,32 +82,32 @@
         });
 
         function checkMatch() {
-        if (firstCard.dataset.pair === secondCard.dataset.pair) {
-            // Correct match, make the cards white and not clickable
-            setTimeout(() => {
-                firstCard.style.backgroundColor = 'white';
-                secondCard.style.backgroundColor = 'white';
-                firstCard.classList.add('guessed');
-                secondCard.classList.add('guessed');
-                firstCard.style.cursor = 'default';
-                secondCard.style.cursor = 'default';
-                firstCard.querySelector('.card-number').style.display = 'none'; // Hide the card number
-                secondCard.querySelector('.card-number').style.display = 'none'; // Hide the card number
-                resetSelection();
-            }, 1000);
-        } else {
-            // Incorrect match, flip the cards back
-            isWaiting = true;
-            setTimeout(() => {
-                firstCard.querySelector('.card-content').style.display = 'none';
-                secondCard.querySelector('.card-content').style.display = 'none';
-                firstCard.querySelector('.card-number').style.display = 'block';
-                secondCard.querySelector('.card-number').style.display = 'block';
-                resetSelection();
-                isWaiting = false;
-            }, 1000);
+            if (firstCard.dataset.pair === secondCard.dataset.pair) {
+                // Correct match, make the cards white and not clickable
+                setTimeout(() => {
+                    firstCard.style.backgroundColor = 'white';
+                    secondCard.style.backgroundColor = 'white';
+                    firstCard.classList.add('guessed');
+                    secondCard.classList.add('guessed');
+                    firstCard.style.cursor = 'default';
+                    secondCard.style.cursor = 'default';
+                    firstCard.querySelector('.card-number').style.display = 'none'; // Hide the card number
+                    secondCard.querySelector('.card-number').style.display = 'none'; // Hide the card number
+                    resetSelection();
+                }, 1000);
+            } else {
+                // Incorrect match, flip the cards back
+                isWaiting = true;
+                setTimeout(() => {
+                    firstCard.querySelector('.card-content').style.display = 'none';
+                    secondCard.querySelector('.card-content').style.display = 'none';
+                    firstCard.querySelector('.card-number').style.display = 'block';
+                    secondCard.querySelector('.card-number').style.display = 'block';
+                    resetSelection();
+                    isWaiting = false;
+                }, 1000);
+            }
         }
-    }
 
         function resetSelection() {
             firstCard = null;
